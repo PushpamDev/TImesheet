@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { Table, Button, Form, Card, Accordion } from "react-bootstrap";
-import { FaEdit, FaTrash, FaPlay, FaStop, FaFilter, FaChevronDown, FaChevronUp } from "react-icons/fa";
+import { FaEdit, FaTrash, FaPlay, FaStop, FaChevronDown, FaChevronUp } from "react-icons/fa";
 import "../styles/DailyTimesheet.css"; // Custom styles
+
+const API_URL = "http://127.0.0.1:5000/timesheet/daily"; // Flask API base URL
 
 const formatTime = (seconds) => {
   const hrs = Math.floor(seconds / 3600);
@@ -10,16 +12,12 @@ const formatTime = (seconds) => {
   return `${hrs.toString().padStart(2, "0")}:${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
 };
 
-// Get the current week's working days in descending order (e.g., Friday → Monday)
 const getCurrentWeekDays = () => {
   const today = new Date();
-  const currentDay = today.getDay(); // 0 (Sunday) to 6 (Saturday)
-
-  // If today is Saturday or Sunday, show only past week (Friday-Monday)
-  const maxDays = currentDay === 0 ? 5 : currentDay === 6 ? 5 : currentDay; // No Saturday/Sunday
-
+  const currentDay = today.getDay();
+  const maxDays = currentDay === 0 ? 5 : currentDay === 6 ? 5 : currentDay;
   const startOfWeek = new Date(today);
-  startOfWeek.setDate(today.getDate() - (currentDay === 0 ? 6 : currentDay - 1)); // Adjust to Monday
+  startOfWeek.setDate(today.getDate() - (currentDay === 0 ? 6 : currentDay - 1));
 
   const days = [];
   for (let i = 0; i < maxDays; i++) {
@@ -31,7 +29,7 @@ const getCurrentWeekDays = () => {
     });
   }
 
-  return days.reverse(); // Reverse array so today is on top
+  return days.reverse();
 };
 
 const DailyTimesheet = () => {
@@ -41,11 +39,19 @@ const DailyTimesheet = () => {
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const [startTime, setStartTime] = useState(null);
   const [elapsedTime, setElapsedTime] = useState(0);
-  const [editIndex, setEditIndex] = useState(null);
+  const [editId, setEditId] = useState(null);
   const [filterProject, setFilterProject] = useState("");
   const [expandedDays, setExpandedDays] = useState({});
 
-  const weekDays = getCurrentWeekDays(); // Get only past and current days
+  const weekDays = getCurrentWeekDays();
+
+  // Fetch timesheet entries from API
+  useEffect(() => {
+    fetch(API_URL)
+      .then((res) => res.json())
+      .then((data) => setEntries(data))
+      .catch((err) => console.error("Error fetching timesheets:", err));
+  }, []);
 
   useEffect(() => {
     let timer;
@@ -61,15 +67,35 @@ const DailyTimesheet = () => {
     if (isTimerRunning) {
       const endTime = new Date();
       const duration = Math.floor((endTime - startTime) / 1000);
-      const newEntry = { task, project, duration, time: startTime.toLocaleTimeString(), date: new Date() };
+      const newEntry = {
+        task,
+        project,
+        duration,
+        time_started: startTime.toLocaleTimeString(),
+        date: new Date().toISOString().split("T")[0], // YYYY-MM-DD format
+      };
 
-      if (editIndex !== null) {
-        const updatedEntries = [...entries];
-        updatedEntries[editIndex] = newEntry;
-        setEntries(updatedEntries);
-        setEditIndex(null);
+      if (editId !== null) {
+        fetch(`${API_URL}/${editId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(newEntry),
+        })
+          .then((res) => res.json())
+          .then(() => {
+            setEntries(entries.map((entry) => (entry.id === editId ? { ...entry, ...newEntry } : entry)));
+            setEditId(null);
+          })
+          .catch((err) => console.error("Error updating timesheet entry:", err));
       } else {
-        setEntries([...entries, newEntry]);
+        fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(newEntry),
+        })
+          .then((res) => res.json())
+          .then((data) => setEntries([...entries, data]))
+          .catch((err) => console.error("Error adding timesheet entry:", err));
       }
 
       setIsTimerRunning(false);
@@ -82,15 +108,18 @@ const DailyTimesheet = () => {
     }
   };
 
-  const handleEdit = (index) => {
-    setTask(entries[index].task);
-    setProject(entries[index].project);
-    setEditIndex(index);
+  const handleEdit = (id) => {
+    const entry = entries.find((e) => e.id === id);
+    setTask(entry.task);
+    setProject(entry.project);
+    setEditId(id);
     setIsTimerRunning(false);
   };
 
-  const handleDelete = (index) => {
-    setEntries(entries.filter((_, i) => i !== index));
+  const handleDelete = (id) => {
+    fetch(`${API_URL}/${id}`, { method: "DELETE" })
+      .then(() => setEntries(entries.filter((entry) => entry.id !== id)))
+      .catch((err) => console.error("Error deleting entry:", err));
   };
 
   const toggleDay = (day) => {
@@ -101,7 +130,6 @@ const DailyTimesheet = () => {
     <div className="container mt-4">
       <h2 className="text-center">🕒 Daily Timesheet</h2>
 
-      {/* Task Form */}
       <Card className="p-3 shadow-sm">
         <Form>
           <Form.Group className="mt-2">
@@ -126,69 +154,43 @@ const DailyTimesheet = () => {
         </Form>
       </Card>
 
-      {/* Filters */}
-      <div className="mt-4">
-        <h5>
-          <FaFilter /> Filters
-        </h5>
-        <Form>
-          <Form.Group>
-            <Form.Label>Filter by Project</Form.Label>
-            <Form.Control as="select" value={filterProject} onChange={(e) => setFilterProject(e.target.value)}>
-              <option value="">All Projects</option>
-              <option value="Project A">Project A</option>
-              <option value="Project B">Project B</option>
-            </Form.Control>
-          </Form.Group>
-        </Form>
-      </div>
-
-      {/* Weekly View with Collapsible Tables (Descending Order) */}
       <Accordion className="mt-4">
         {weekDays.map((day, index) => {
-          const dayEntries = entries.filter((entry) => entry.date.toDateString() === day.date.toDateString());
+          const dayEntries = entries.filter((entry) => entry.date === day.date.toISOString().split("T")[0]);
           return (
             <Card key={index} className="mb-2">
-              <Card.Header className="d-flex justify-content-between align-items-center">
+              <Card.Header>
                 <Button variant="link" className="text-dark fw-bold" onClick={() => toggleDay(day.label)}>
                   {day.label} {expandedDays[day.label] ? <FaChevronUp /> : <FaChevronDown />}
                 </Button>
               </Card.Header>
               {expandedDays[day.label] && (
                 <Card.Body>
-                  {dayEntries.length > 0 ? (
-                    <Table striped bordered hover className="shadow-sm">
-                      <thead className="table-dark">
-                        <tr>
-                          <th>Task</th>
-                          <th>Project</th>
-                          <th>Time Started</th>
-                          <th>Duration</th>
-                          <th>Actions</th>
+                  <Table striped bordered hover>
+                    <thead className="table-dark">
+                      <tr>
+                        <th>Task</th>
+                        <th>Project</th>
+                        <th>Time Started</th>
+                        <th>Duration</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {dayEntries.map((entry) => (
+                        <tr key={entry.id}>
+                          <td>{entry.task}</td>
+                          <td>{entry.project}</td>
+                          <td>{entry.time_started}</td>
+                          <td>{formatTime(entry.duration)}</td>
+                          <td>
+                            <Button onClick={() => handleEdit(entry.id)}><FaEdit /></Button>
+                            <Button onClick={() => handleDelete(entry.id)}><FaTrash /></Button>
+                          </td>
                         </tr>
-                      </thead>
-                      <tbody>
-                        {dayEntries.map((entry, index) => (
-                          <tr key={index}>
-                            <td>{entry.task}</td>
-                            <td>{entry.project}</td>
-                            <td>{entry.time}</td>
-                            <td>{formatTime(entry.duration)}</td>
-                            <td>
-                              <Button variant="warning" size="sm" onClick={() => handleEdit(index)} className="me-2">
-                                <FaEdit />
-                              </Button>
-                              <Button variant="danger" size="sm" onClick={() => handleDelete(index)}>
-                                <FaTrash />
-                              </Button>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </Table>
-                  ) : (
-                    <p className="text-muted">No tasks recorded for this day.</p>
-                  )}
+                      ))}
+                    </tbody>
+                  </Table>
                 </Card.Body>
               )}
             </Card>
