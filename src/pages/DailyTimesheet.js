@@ -45,10 +45,16 @@ const DailyTimesheet = () => {
 
   const weekDays = getCurrentWeekDays();
 
-  // Fetch timesheet entries from API
+  // Fetch timesheet entries from API with error handling
   useEffect(() => {
     fetch(`${API_URL}/timesheet/daily`)
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) {
+          // Handle HTTP errors
+          throw new Error(`HTTP error! Status: ${res.status}`);
+        }
+        return res.json(); // Parse JSON if the response is okay
+      })
       .then((data) => setEntries(data))
       .catch((err) => console.error("Error fetching timesheets:", err));
   }, []);
