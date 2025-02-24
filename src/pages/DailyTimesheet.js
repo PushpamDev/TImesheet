@@ -3,7 +3,7 @@ import { Table, Button, Form, Card, Accordion } from "react-bootstrap";
 import { FaEdit, FaTrash, FaPlay, FaStop, FaChevronDown, FaChevronUp } from "react-icons/fa";
 import "../styles/DailyTimesheet.css"; // Custom styles
 
-const API_URL = "http://127.0.0.1:5000/timesheet/daily"; // Flask API base URL
+const API_URL = "https://your-vercel-project-url.vercel.app/api/timesheet/daily"; // Flask API base URL
 
 const formatTime = (seconds) => {
   const hrs = Math.floor(seconds / 3600);
