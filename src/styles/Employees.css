@@ -1,60 +1,117 @@
 .container {
-    margin-top: 20px;
-  }
-  
-  h2 {
-    text-align: center;
-    margin-bottom: 20px;
-  }
-  
-  .card {
-    padding: 20px;
-    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-    border-radius: 10px;
-  }
-  
-  .form-group {
-    margin-bottom: 15px;
-  }
-  
+  margin-top: 20px;
+}
+
+/* Heading */
+h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #34495E; /* Dark Blue */
+}
+
+/* Card Styling */
+.card {
+  padding: 20px;
+  background-color: #F7F9F9; /* Light Gray */
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  border: 1px solid #D5DBDB;
+}
+
+/* Form Fields */
+.form-group {
+  margin-bottom: 15px;
+}
+
+/* Table Container */
+.table-container {
+  margin-top: 20px;
+  background-color: #FFFFFF;
+  border-radius: 10px;
+  padding: 15px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Table Styling */
+.table {
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.table th {
+  background-color: #34495E; /* Dark Blue */
+  color: white;
+  text-align: center;
+  padding: 12px;
+}
+
+.table td {
+  text-align: center;
+  padding: 10px;
+}
+
+/* Action Buttons */
+.action-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+/* Buttons */
+.btn {
+  padding: 7px 12px;
+  font-size: 14px;
+  border-radius: 5px;
+  transition: all 0.3s ease-in-out;
+}
+
+.btn-primary {
+  background-color: #16A085; /* Teal Green */
+  border: none;
+}
+
+.btn-primary:hover {
+  background-color: #1ABC9C; /* Lighter Teal */
+}
+
+.btn-danger {
+  background-color: #E74C3C; /* Red for Delete */
+  border: none;
+}
+
+.btn-danger:hover {
+  background-color: #C0392B;
+}
+
+/* Upload Section */
+.upload-section {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.upload-section input {
+  border: 2px solid #16A085; /* Teal Green */
+  padding: 8px;
+  border-radius: 5px;
+}
+
+.upload-section button {
+  margin-top: 10px;
+  background-color: #16A085; /* Teal Green */
+  color: white;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.upload-section button:hover {
+  background-color: #1ABC9C;
+}
+
+/* Responsive Table */
+@media (max-width: 768px) {
   .table-container {
-    margin-top: 20px;
+    overflow-x: auto;
   }
-  
-  .table {
-    border-radius: 10px;
-    overflow: hidden;
-  }
-  
-  .table th {
-    background-color: #007bff;
-    color: white;
-    text-align: center;
-  }
-  
-  .table td {
-    text-align: center;
-  }
-  
-  .action-buttons {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-  }
-  
-  .btn {
-    padding: 5px 10px;
-    font-size: 14px;
-  }
-  
-  .upload-section {
-    margin-top: 20px;
-    text-align: center;
-  }
-  
-  @media (max-width: 768px) {
-    .table-container {
-      overflow-x: auto;
-    }
-  }
-  
+}
