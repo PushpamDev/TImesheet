@@ -3,7 +3,7 @@ import { Table, Button, Form, Card, Accordion } from "react-bootstrap";
 import { FaEdit, FaTrash, FaPlay, FaStop, FaChevronDown, FaChevronUp } from "react-icons/fa";
 import "../styles/DailyTimesheet.css"; // Custom styles
 
-const API_URL = "t-imesheet-1kk9co0ew-davidpushpams-projects.vercel.app"; // Flask API base URL
+const API_URL = "https://t-imesheet-1kk9co0ew-davidpushpams-projects.vercel.app"; // Flask API base URL
 
 const formatTime = (seconds) => {
   const hrs = Math.floor(seconds / 3600);
@@ -47,7 +47,7 @@ const DailyTimesheet = () => {
 
   // Fetch timesheet entries from API
   useEffect(() => {
-    fetch(API_URL)
+    fetch(`${API_URL}/timesheet/daily`)
       .then((res) => res.json())
       .then((data) => setEntries(data))
       .catch((err) => console.error("Error fetching timesheets:", err));
@@ -76,7 +76,7 @@ const DailyTimesheet = () => {
       };
 
       if (editId !== null) {
-        fetch(`${API_URL}/${editId}`, {
+        fetch(`${API_URL}/timesheet/daily/${editId}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(newEntry),
@@ -88,7 +88,7 @@ const DailyTimesheet = () => {
           })
           .catch((err) => console.error("Error updating timesheet entry:", err));
       } else {
-        fetch(API_URL, {
+        fetch(`${API_URL}/timesheet/daily`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(newEntry),
@@ -117,7 +117,7 @@ const DailyTimesheet = () => {
   };
 
   const handleDelete = (id) => {
-    fetch(`${API_URL}/${id}`, { method: "DELETE" })
+    fetch(`${API_URL}/timesheet/daily/${id}`, { method: "DELETE" })
       .then(() => setEntries(entries.filter((entry) => entry.id !== id)))
       .catch((err) => console.error("Error deleting entry:", err));
   };
