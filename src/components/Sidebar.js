@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { FaBars, FaClock, FaProjectDiagram, FaUsers, FaHome } from "react-icons/fa";
-import "./styles/Sidebar.css"; // Fixed import path for CSS
+import "../styles/Sidebar.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 
-const Sidebar = () => {
+const Sidebar = ({ userRole }) => {
   const [collapsed, setCollapsed] = useState(false);
 
   return (
@@ -29,16 +29,20 @@ const Sidebar = () => {
               <FaClock /> {!collapsed && " Weekly Timesheet"}
             </Link>
           </li>
-          <li className="nav-item">
-            <Link to="/projects" className="nav-link text-white">
-              <FaProjectDiagram /> {!collapsed && " Projects"}
-            </Link>
-          </li>
-          <li className="nav-item">
-            <Link to="/employees" className="nav-link text-white">
-              <FaUsers /> {!collapsed && " Employees"}
-            </Link>
-          </li>
+          {userRole !== "Employee" && (
+            <li className="nav-item">
+              <Link to="/projects" className="nav-link text-white">
+                <FaProjectDiagram /> {!collapsed && " Projects"}
+              </Link>
+            </li>
+          )}
+          {userRole === "Admin" && (
+            <li className="nav-item">
+              <Link to="/employees" className="nav-link text-white">
+                <FaUsers /> {!collapsed && " Employees"}
+              </Link>
+            </li>
+          )}
         </ul>
       </div>
     </div>

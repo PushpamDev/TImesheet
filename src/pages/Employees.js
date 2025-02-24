@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import { Table, Button, Form, Card, Modal, Alert } from "react-bootstrap";
 import { FaTrash, FaUpload, FaPlus } from "react-icons/fa";
 import Papa from "papaparse";
-import EmployeeForm from "./EmployeeForm";
-import "./Employees.css";
+import EmployeeForm from "../components/EmployeeForm";
+import "../styles/Employees.css";
 
 const Employees = () => {
   const [employees, setEmployees] = useState([

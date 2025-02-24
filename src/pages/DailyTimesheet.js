@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Table, Button, Form, Card, Accordion } from "react-bootstrap";
 import { FaEdit, FaTrash, FaPlay, FaStop, FaFilter, FaChevronDown, FaChevronUp } from "react-icons/fa";
-import "./DailyTimesheet.css"; // Custom styles
+import "../styles/DailyTimesheet.css"; // Custom styles
 
 const formatTime = (seconds) => {
   const hrs = Math.floor(seconds / 3600);

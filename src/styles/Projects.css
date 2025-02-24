@@ -1,0 +1,113 @@
+.container {
+    max-width: 900px;
+    margin: auto;
+  }
+  
+  h2 {
+    font-size: 1.8rem;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 20px;
+    color: #333;
+  }
+  
+  .card {
+    background: #f8f9fa;
+    border-radius: 8px;
+  }
+  
+  .card h5 {
+    font-size: 1.2rem;
+    font-weight: bold;
+  }
+  
+  .card .form-group {
+    margin-bottom: 10px;
+  }
+  
+  .table {
+    text-align: center;
+  }
+  
+  .table th {
+    background-color: #343a40 !important;
+    color: white;
+  }
+  
+  .table td,
+  .table th {
+    vertical-align: middle;
+  }
+  
+  .table button {
+    font-size: 0.85rem;
+  }
+  
+  .d-flex {
+    gap: 10px;
+  }
+  
+  .form-control,
+  .form-select {
+    max-width: 250px;
+  }
+  
+  button {
+    transition: 0.2s ease-in-out;
+  }
+  
+  button:hover {
+    opacity: 0.8;
+  }
+
+  .container {
+    max-width: 1000px;
+  }
+  
+  h2 {
+    color: #333;
+  }
+  
+  .card {
+    background: #f8f9fa;
+    border-radius: 8px;
+  }
+  
+  .table-dark {
+    background: #343a40;
+    color: white;
+  }
+  
+  .table-dark th {
+    text-align: center;
+  }
+  
+  .table tbody tr td {
+    vertical-align: middle;
+  }
+  
+  button {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  
+  button svg {
+    margin-top: -2px;
+  }
+  
+  /* Truncate long text with ellipsis */
+.truncate-text {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px;
+  }
+  
+  /* Add spacing for project cards on mobile */
+  @media (max-width: 768px) {
+    .card {
+      padding: 10px;
+    }
+  }
+  

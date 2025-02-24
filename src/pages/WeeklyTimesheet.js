@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Table, Button, Card, Collapse, Form } from "react-bootstrap";
 import { FaEdit, FaTrash, FaChevronDown, FaChevronUp, FaFilter } from "react-icons/fa";
-import "./WeeklyTimesheet.css";
+import "../styles/WeeklyTimesheet.css";
 
 const WeeklyTimesheet = () => {
   // Sample data for weekly timesheet

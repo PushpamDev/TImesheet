@@ -1,0 +1,169 @@
+/* Container */
+.container {
+    max-width: 1200px;
+    margin: auto;
+    padding: 20px;
+  }
+  
+  /* Header Styling */
+  h2 {
+    font-weight: bold;
+    color: #34495E; /* Dark Blue */
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  /* Timer Section */
+  .timer-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #16A085; /* Teal Green */
+    color: white;
+    padding: 15px;
+    border-radius: 8px;
+  }
+  
+  .timer-container button {
+    background-color: #F7F9F9; /* Light Gray */
+    color: #16A085;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+  
+  .timer-container button:hover {
+    background-color: #EAEDED;
+  }
+  
+  /* Daily Timesheet Table */
+  .table-container {
+    margin-top: 20px;
+    overflow-x: auto;
+  }
+  
+  .table {
+    width: 100%;
+    border-collapse: collapse;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  
+  .table th {
+    background-color: #34495E; /* Dark Blue */
+    color: white;
+    padding: 12px;
+    text-align: center;
+  }
+  
+  .table td {
+    text-align: center;
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  /* Collapsible Table Sections */
+  .collapsible-header {
+    background-color: #16A085;
+    color: white;
+    padding: 12px;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 5px;
+    margin-top: 10px;
+    text-align: left;
+    transition: 0.3s;
+  }
+  
+  .collapsible-header:hover {
+    background-color: #138F75;
+  }
+  
+  /* Task Details Row */
+  .task-details {
+    background-color: #F7F9F9;
+    border-left: 4px solid #16A085;
+    padding: 10px;
+    display: none;
+  }
+  
+  /* Action Buttons */
+  .action-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+  }
+  
+  .action-buttons button {
+    padding: 6px 12px;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+  
+  .edit-btn {
+    background-color: #F39C12;
+    color: white;
+  }
+  
+  .edit-btn:hover {
+    background-color: #D68910;
+  }
+  
+  .delete-btn {
+    background-color: #E74C3C;
+    color: white;
+  }
+  
+  .delete-btn:hover {
+    background-color: #C0392B;
+  }
+  
+  /* Filters */
+  .filter-section {
+    display: flex;
+    justify-content: space-between;
+    background-color: #F7F9F9;
+    padding: 15px;
+    border-radius: 8px;
+    margin-top: 20px;
+  }
+  
+  .filter-section select,
+  .filter-section input {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  
+  /* Mobile View */
+  @media (max-width: 768px) {
+    .timer-container {
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+  
+    .filter-section {
+      flex-direction: column;
+      gap: 10px;
+    }
+  
+    .table {
+      font-size: 14px;
+    }
+  
+    .table th,
+    .table td {
+      padding: 8px;
+    }
+  
+    .action-buttons {
+      flex-direction: column;
+      gap: 5px;
+    }
+  }
+  
