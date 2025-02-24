@@ -88,13 +88,17 @@ const DailyTimesheet = () => {
           })
           .catch((err) => console.error("Error updating timesheet entry:", err));
       } else {
+        console.log("Sending POST request to add new entry:", newEntry);
         fetch(`${API_URL}/timesheet/daily`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(newEntry),
         })
           .then((res) => res.json())
-          .then((data) => setEntries([...entries, data]))
+          .then((data) => {
+            console.log("New entry added:", data);
+            setEntries([...entries, data]);
+          })
           .catch((err) => console.error("Error adding timesheet entry:", err));
       }
 
