@@ -2,9 +2,13 @@ import json
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
+from flask_cors import CORS
 
 # Initialize Flask app
 app = Flask(__name__)
+
+# Enable CORS for frontend URL
+CORS(app, origins=["https://t-imesheet-1kk9co0ew-davidpushpams-projects.vercel.app"])
 
 # SQLite Database Configuration
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///timesheet.db"
@@ -39,17 +43,20 @@ class TimesheetEntry(db.Model):
 def get_timesheets():
     today = datetime.utcnow().strftime("%Y-%m-%d")
     timesheets = TimesheetEntry.query.filter_by(date=today).all()
-    return jsonify([entry.to_dict() for entry in timesheets])
+    return jsonify([entry.to_dict() for entry in timesheets]), 200
 
 # Add a new timesheet entry (for today)
 @app.route("/api/timesheet/daily", methods=["POST"])
 def add_timesheet():
     data = request.json
+    if not data:
+        return jsonify({"error": "Invalid JSON"}), 400
+
     new_entry = TimesheetEntry(
-        task=data["task"],
-        project=data["project"],
-        time_started=data["time_started"],
-        duration=data["duration"],
+        task=data.get("task"),
+        project=data.get("project"),
+        time_started=data.get("time_started"),
+        duration=data.get("duration"),
         date=datetime.utcnow().strftime("%Y-%m-%d"),  # Today's date
     )
     db.session.add(new_entry)
@@ -64,13 +71,16 @@ def update_timesheet(id):
         return jsonify({"error": "Entry not found"}), 404
 
     data = request.json
+    if not data:
+        return jsonify({"error": "Invalid JSON"}), 400
+
     entry.task = data.get("task", entry.task)
     entry.project = data.get("project", entry.project)
     entry.time_started = data.get("time_started", entry.time_started)
     entry.duration = data.get("duration", entry.duration)
 
     db.session.commit()
-    return jsonify(entry.to_dict())
+    return jsonify(entry.to_dict()), 200
 
 # Delete a timesheet entry
 @app.route("/api/timesheet/daily/<int:id>", methods=["DELETE"])
@@ -81,8 +91,13 @@ def delete_timesheet(id):
 
     db.session.delete(entry)
     db.session.commit()
-    return jsonify({"message": "Timesheet entry deleted successfully!"})
+    return jsonify({"message": "Timesheet entry deleted successfully!"}), 200
 
+# Handle CORS preflight requests
+@app.route("/api/timesheet/daily", methods=["OPTIONS"])
+@app.route("/api/timesheet/daily/<int:id>", methods=["OPTIONS"])
+def handle_options():
+    return jsonify({"message": "CORS preflight successful"}), 200
 
 # Serverless handler for Vercel
 def handler(request):
