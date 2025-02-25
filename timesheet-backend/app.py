@@ -31,10 +31,6 @@ class TimesheetEntry(db.Model):
             "date": self.date,
         }
 
-# Create Database Tables
-with app.app_context():
-    db.create_all()
-
 # --- Routes ---
 
 # Get all timesheet entries (for today)
@@ -86,5 +82,7 @@ def delete_timesheet(id):
     db.session.commit()
     return jsonify({"message": "Timesheet entry deleted successfully!"})
 
-if __name__ == "__main__":
-    app.run(debug=True)
+# Export the app as a function for Vercel
+def handler(request):
+    return app(request)
+

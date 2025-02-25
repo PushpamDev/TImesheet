@@ -14,13 +14,11 @@ const Projects = () => {
   const [editProject, setEditProject] = useState(null);
   const [filterStatus, setFilterStatus] = useState("");
 
-  // Project Summary Counts
   const totalProjects = projects.length;
   const activeProjects = projects.filter(p => p.status === "Active").length;
   const completedProjects = projects.filter(p => p.status === "Completed").length;
   const pendingProjects = projects.filter(p => p.status === "Pending").length;
 
-  // Open modal for adding/editing projects
   const handleAddProject = () => {
     setEditProject(null);
     setShowModal(true);
@@ -59,43 +57,52 @@ const Projects = () => {
 
       {/* Project Summary Section */}
       <Row className="mb-4">
-        <Col md={3}>
-          <Card className="summary-card bg-primary text-white">
-            <Card.Body>
-              <FaTasks size={24} className="me-2" />
-              <h5>Total Projects</h5>
-              <h4>{totalProjects}</h4>
-            </Card.Body>
-          </Card>
-        </Col>
-        <Col md={3}>
-          <Card className="summary-card bg-success text-white">
-            <Card.Body>
-              <FaCheckCircle size={24} className="me-2" />
-              <h5>Active Projects</h5>
-              <h4>{activeProjects}</h4>
-            </Card.Body>
-          </Card>
-        </Col>
-        <Col md={3}>
-          <Card className="summary-card bg-secondary text-white">
-            <Card.Body>
-              <FaCheckCircle size={24} className="me-2" />
-              <h5>Completed Projects</h5>
-              <h4>{completedProjects}</h4>
-            </Card.Body>
-          </Card>
-        </Col>
-        <Col md={3}>
-          <Card className="summary-card bg-warning text-white">
-            <Card.Body>
-              <FaClock size={24} className="me-2" />
-              <h5>Pending Projects</h5>
-              <h4>{pendingProjects}</h4>
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
+  <Col xs={6} md={3}>
+    <Card className="summary-card shadow-sm">
+      <Card.Body className="text-center">
+        <div className="icon-circle bg-primary">
+          <FaTasks size={20} className="text-white" />
+        </div>
+        <h6>Total Projects</h6>
+        <h4 className="fw-bold">{totalProjects}</h4>
+      </Card.Body>
+    </Card>
+  </Col>
+  <Col xs={6} md={3}>
+    <Card className="summary-card shadow-sm">
+      <Card.Body className="text-center">
+        <div className="icon-circle bg-success">
+          <FaCheckCircle size={20} className="text-white" />
+        </div>
+        <h6>Active Projects</h6>
+        <h4 className="fw-bold">{activeProjects}</h4>
+      </Card.Body>
+    </Card>
+  </Col>
+  <Col xs={6} md={3}>
+    <Card className="summary-card shadow-sm">
+      <Card.Body className="text-center">
+        <div className="icon-circle bg-secondary">
+          <FaCheckCircle size={20} className="text-white" />
+        </div>
+        <h6>Completed Projects</h6>
+        <h4 className="fw-bold">{completedProjects}</h4>
+      </Card.Body>
+    </Card>
+  </Col>
+  <Col xs={6} md={3}>
+    <Card className="summary-card shadow-sm">
+      <Card.Body className="text-center">
+        <div className="icon-circle bg-warning">
+          <FaClock size={20} className="text-white" />
+        </div>
+        <h6>Pending Projects</h6>
+        <h4 className="fw-bold">{pendingProjects}</h4>
+      </Card.Body>
+    </Card>
+  </Col>
+</Row>
+
 
       {/* Filter Projects */}
       <Card className="p-3 shadow-sm mb-3">
@@ -114,77 +121,41 @@ const Projects = () => {
       </Button>
 
       {/* Project Table */}
-      <Table striped bordered hover className="shadow-sm">
-        <thead className="table-dark">
-          <tr>
-            <th>ID</th>
-            <th>Project Name</th>
-            <th>Description</th>
-            <th>Start Date</th>
-            <th>End Date</th>
-            <th>Status</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filteredProjects.map((project) => (
-            <tr key={project.id}>
-              <td>{project.id}</td>
-              <td>{project.name}</td>
-              <td>{project.description}</td>
-              <td>{project.startDate}</td>
-              <td>{project.endDate}</td>
-              <td>{project.status}</td>
-              <td>
-                <Button variant="warning" size="sm" className="me-2" onClick={() => handleEdit(project)}>
-                  <FaEdit /> Edit
-                </Button>
-                <Button variant="danger" size="sm" onClick={() => handleDelete(project.id)}>
-                  <FaTrash /> Delete
-                </Button>
-              </td>
+      <div className="table-responsive">
+        <Table striped bordered hover className="shadow-sm">
+          <thead className="table-dark">
+            <tr>
+              <th>ID</th>
+              <th>Project Name</th>
+              <th>Description</th>
+              <th>Start Date</th>
+              <th>End Date</th>
+              <th>Status</th>
+              <th>Actions</th>
             </tr>
-          ))}
-        </tbody>
-      </Table>
-
-      {/* Project Modal */}
-      <Modal show={showModal} onHide={() => setShowModal(false)}>
-        <Modal.Header closeButton>
-          <Modal.Title>{editProject ? "Edit Project" : "Add Project"}</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Form onSubmit={handleSaveProject}>
-            <Form.Group>
-              <Form.Label>Project Name</Form.Label>
-              <Form.Control type="text" name="name" defaultValue={editProject?.name || ""} required />
-            </Form.Group>
-            <Form.Group>
-              <Form.Label>Description</Form.Label>
-              <Form.Control as="textarea" name="description" defaultValue={editProject?.description || ""} required />
-            </Form.Group>
-            <Form.Group>
-              <Form.Label>Start Date</Form.Label>
-              <Form.Control type="date" name="startDate" defaultValue={editProject?.startDate || ""} required />
-            </Form.Group>
-            <Form.Group>
-              <Form.Label>Expected End Date</Form.Label>
-              <Form.Control type="date" name="endDate" defaultValue={editProject?.endDate || ""} required />
-            </Form.Group>
-            <Form.Group>
-              <Form.Label>Status</Form.Label>
-              <Form.Select name="status" defaultValue={editProject?.status || "Active"} required>
-                <option value="Active">Active</option>
-                <option value="Completed">Completed</option>
-                <option value="Pending">Pending</option>
-              </Form.Select>
-            </Form.Group>
-            <Button variant="primary" type="submit" className="mt-3">
-              {editProject ? "Save Changes" : "Add Project"}
-            </Button>
-          </Form>
-        </Modal.Body>
-      </Modal>
+          </thead>
+          <tbody>
+            {filteredProjects.map((project) => (
+              <tr key={project.id}>
+                <td>{project.id}</td>
+                <td>{project.name}</td>
+                <td>{project.description}</td>
+                <td>{project.startDate}</td>
+                <td>{project.endDate}</td>
+                <td>{project.status}</td>
+                <td>
+                  <Button variant="warning" size="sm" className="me-2" onClick={() => handleEdit(project)}>
+                    <FaEdit /> Edit
+                  </Button>
+                  <Button variant="danger" size="sm" onClick={() => handleDelete(project.id)}>
+                    <FaTrash /> Delete
+                  </Button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </Table>
+      </div>
     </div>
   );
 };
