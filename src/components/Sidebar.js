@@ -10,36 +10,38 @@ const Sidebar = ({ userRole }) => {
   return (
     <div className={`d-flex ${collapsed ? "sidebar-collapsed" : "sidebar-expanded"}`} id="sidebar">
       <div className="sidebar bg-dark text-white p-3">
+        {/* Sidebar Toggle Button */}
         <button className="btn btn-light mb-3" onClick={() => setCollapsed(!collapsed)}>
-          <FaBars />
+          <FaBars size={24} />
         </button>
+
         <ul className="nav flex-column">
           <li className="nav-item">
             <Link to="/" className="nav-link text-white">
-              <FaHome /> {!collapsed && " Dashboard"}
+              <FaHome className="sidebar-icon" /> {!collapsed && " Dashboard"}
             </Link>
           </li>
           <li className="nav-item">
             <Link to="/daily-timesheet" className="nav-link text-white">
-              <FaClock /> {!collapsed && " Daily Timesheet"}
+              <FaClock className="sidebar-icon" /> {!collapsed && " Daily Timesheet"}
             </Link>
           </li>
           <li className="nav-item">
             <Link to="/weekly-timesheet" className="nav-link text-white">
-              <FaClock /> {!collapsed && " Weekly Timesheet"}
+              <FaClock className="sidebar-icon" /> {!collapsed && " Weekly Timesheet"}
             </Link>
           </li>
           {userRole !== "Employee" && (
             <li className="nav-item">
               <Link to="/projects" className="nav-link text-white">
-                <FaProjectDiagram /> {!collapsed && " Projects"}
+                <FaProjectDiagram className="sidebar-icon" /> {!collapsed && " Projects"}
               </Link>
             </li>
           )}
           {userRole === "Admin" && (
             <li className="nav-item">
               <Link to="/employees" className="nav-link text-white">
-                <FaUsers /> {!collapsed && " Employees"}
+                <FaUsers className="sidebar-icon" /> {!collapsed && " Employees"}
               </Link>
             </li>
           )}

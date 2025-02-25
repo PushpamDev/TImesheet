@@ -27,9 +27,10 @@
 .nav-link {
   display: flex;
   align-items: center;
-  padding: 10px;
+  padding: 12px 15px; /* Slightly increased padding */
   white-space: nowrap;
   transition: 0.3s;
+  font-size: 16px; /* Slightly larger text */
 }
 
 /* Hide text when collapsed */
@@ -39,7 +40,8 @@
 
 /* Align icons properly */
 .nav-link svg {
-  margin-right: 10px;
+  font-size: 22px; /* Increase icon size */
+  margin-right: 12px; /* More spacing between icon and text */
 }
 
 /* Button to Toggle Sidebar */
@@ -74,5 +76,15 @@
 
   .sidebar-collapsed + .main-content {
     margin-left: 60px;
+  }
+
+  /* Increase icon size and spacing for mobile */
+  .nav-link svg {
+    font-size: 26px; /* Bigger icons on mobile */
+    margin-right: 15px; /* More spacing */
+  }
+
+  .nav-link {
+    padding: 14px 18px; /* Bigger touch area for mobile */
   }
 }
