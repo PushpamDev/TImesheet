@@ -3,7 +3,7 @@ import { Table, Button, Form, Card, Accordion } from "react-bootstrap";
 import { FaEdit, FaTrash, FaPlay, FaStop, FaChevronDown, FaChevronUp } from "react-icons/fa";
 import "../styles/DailyTimesheet.css"; // Custom styles
 
-const API_URL = "https://t-imesheet-ozt7gbsz4-davidpushpams-projects.vercel.app"; // Flask API base URL
+const API_URL = "t-imesheet-ozt7gbsz4-davidpushpams-projects.vercel.app"; // Flask API base URL
 
 const formatTime = (seconds) => {
   const hrs = Math.floor(seconds / 3600);
@@ -45,9 +45,16 @@ const DailyTimesheet = () => {
 
   const weekDays = getCurrentWeekDays();
 
+  // Fetch timesheet entries from API with error handling
   useEffect(() => {
     fetch(`${API_URL}/timesheet/daily`)
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) {
+          // Handle HTTP errors
+          throw new Error(`HTTP error! Status: ${res.status}`);
+        }
+        return res.json(); // Parse JSON if the response is okay
+      })
       .then((data) => setEntries(data))
       .catch((err) => console.error("Error fetching timesheets:", err));
   }, []);
@@ -71,7 +78,7 @@ const DailyTimesheet = () => {
         project,
         duration,
         time_started: startTime.toLocaleTimeString(),
-        date: new Date().toISOString().split("T")[0],
+        date: new Date().toISOString().split("T")[0], // YYYY-MM-DD format
       };
 
       if (editId !== null) {
@@ -87,13 +94,17 @@ const DailyTimesheet = () => {
           })
           .catch((err) => console.error("Error updating timesheet entry:", err));
       } else {
+        console.log("Sending POST request to add new entry:", newEntry);
         fetch(`${API_URL}/timesheet/daily`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(newEntry),
         })
           .then((res) => res.json())
-          .then((data) => setEntries([...entries, data]))
+          .then((data) => {
+            console.log("New entry added:", data);
+            setEntries([...entries, data]);
+          })
           .catch((err) => console.error("Error adding timesheet entry:", err));
       }
 
@@ -143,6 +154,7 @@ const DailyTimesheet = () => {
               <option value="Project B">Project B</option>
             </Form.Control>
           </Form.Group>
+
           <div className="d-flex align-items-center mt-3">
             <Button onClick={handleStartStopTimer} variant={isTimerRunning ? "danger" : "success"} className="btn-lg shadow-sm">
               {isTimerRunning ? <FaStop /> : <FaPlay />} {isTimerRunning ? " Stop Timer" : " Start Timer"}
@@ -151,6 +163,50 @@ const DailyTimesheet = () => {
           </div>
         </Form>
       </Card>
+
+      <Accordion className="mt-4">
+        {weekDays.map((day, index) => {
+          const dayEntries = entries.filter((entry) => entry.date === day.date.toISOString().split("T")[0]);
+          return (
+            <Card key={index} className="mb-2">
+              <Card.Header>
+                <Button variant="link" className="text-dark fw-bold" onClick={() => toggleDay(day.label)}>
+                  {day.label} {expandedDays[day.label] ? <FaChevronUp /> : <FaChevronDown />}
+                </Button>
+              </Card.Header>
+              {expandedDays[day.label] && (
+                <Card.Body>
+                  <Table striped bordered hover>
+                    <thead className="table-dark">
+                      <tr>
+                        <th>Task</th>
+                        <th>Project</th>
+                        <th>Time Started</th>
+                        <th>Duration</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {dayEntries.map((entry) => (
+                        <tr key={entry.id}>
+                          <td>{entry.task}</td>
+                          <td>{entry.project}</td>
+                          <td>{entry.time_started}</td>
+                          <td>{formatTime(entry.duration)}</td>
+                          <td>
+                            <Button onClick={() => handleEdit(entry.id)}><FaEdit /></Button>
+                            <Button onClick={() => handleDelete(entry.id)}><FaTrash /></Button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </Table>
+                </Card.Body>
+              )}
+            </Card>
+          );
+        })}
+      </Accordion>
     </div>
   );
 };
