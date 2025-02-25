@@ -57,52 +57,51 @@ const Projects = () => {
 
       {/* Project Summary Section */}
       <Row className="mb-4">
-  <Col xs={6} md={3}>
-    <Card className="summary-card shadow-sm">
-      <Card.Body className="text-center">
-        <div className="icon-circle bg-primary">
-          <FaTasks size={20} className="text-white" />
-        </div>
-        <h6>Total Projects</h6>
-        <h4 className="fw-bold">{totalProjects}</h4>
-      </Card.Body>
-    </Card>
-  </Col>
-  <Col xs={6} md={3}>
-    <Card className="summary-card shadow-sm">
-      <Card.Body className="text-center">
-        <div className="icon-circle bg-success">
-          <FaCheckCircle size={20} className="text-white" />
-        </div>
-        <h6>Active Projects</h6>
-        <h4 className="fw-bold">{activeProjects}</h4>
-      </Card.Body>
-    </Card>
-  </Col>
-  <Col xs={6} md={3}>
-    <Card className="summary-card shadow-sm">
-      <Card.Body className="text-center">
-        <div className="icon-circle bg-secondary">
-          <FaCheckCircle size={20} className="text-white" />
-        </div>
-        <h6>Completed Projects</h6>
-        <h4 className="fw-bold">{completedProjects}</h4>
-      </Card.Body>
-    </Card>
-  </Col>
-  <Col xs={6} md={3}>
-    <Card className="summary-card shadow-sm">
-      <Card.Body className="text-center">
-        <div className="icon-circle bg-warning">
-          <FaClock size={20} className="text-white" />
-        </div>
-        <h6>Pending Projects</h6>
-        <h4 className="fw-bold">{pendingProjects}</h4>
-      </Card.Body>
-    </Card>
-  </Col>
-</Row>
-
+        <Col xs={6} md={3}>
+          <Card className="summary-card shadow-sm">
+            <Card.Body className="text-center">
+              <div className="icon-circle bg-primary">
+                <FaTasks size={20} className="text-white" />
+              </div>
+              <h6>Total Projects</h6>
+              <h4 className="fw-bold">{totalProjects}</h4>
+            </Card.Body>
+          </Card>
+        </Col>
+        <Col xs={6} md={3}>
+          <Card className="summary-card shadow-sm">
+            <Card.Body className="text-center">
+              <div className="icon-circle bg-success">
+                <FaCheckCircle size={20} className="text-white" />
+              </div>
+              <h6>Active Projects</h6>
+              <h4 className="fw-bold">{activeProjects}</h4>
+            </Card.Body>
+          </Card>
+        </Col>
+        <Col xs={6} md={3}>
+          <Card className="summary-card shadow-sm">
+            <Card.Body className="text-center">
+              <div className="icon-circle bg-secondary">
+                <FaCheckCircle size={20} className="text-white" />
+              </div>
+              <h6>Completed Projects</h6>
+              <h4 className="fw-bold">{completedProjects}</h4>
+            </Card.Body>
+          </Card>
+        </Col>
+        <Col xs={6} md={3}>
+          <Card className="summary-card shadow-sm">
+            <Card.Body className="text-center">
+              <div className="icon-circle bg-warning">
+                <FaClock size={20} className="text-white" />
+              </div>
+              <h6>Pending Projects</h6>
+              <h4 className="fw-bold">{pendingProjects}</h4>
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
 
       {/* Filter Projects */}
       <Card className="p-3 shadow-sm mb-3">
@@ -156,6 +155,44 @@ const Projects = () => {
           </tbody>
         </Table>
       </div>
+
+      {/* Add/Edit Project Modal */}
+      <Modal show={showModal} onHide={() => setShowModal(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>{editProject ? "Edit Project" : "Add Project"}</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form onSubmit={handleSaveProject}>
+            <Form.Group className="mb-3">
+              <Form.Label>Project Name</Form.Label>
+              <Form.Control type="text" name="name" defaultValue={editProject?.name || ""} required />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Description</Form.Label>
+              <Form.Control as="textarea" name="description" defaultValue={editProject?.description || ""} required />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Start Date</Form.Label>
+              <Form.Control type="date" name="startDate" defaultValue={editProject?.startDate || ""} required />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>End Date</Form.Label>
+              <Form.Control type="date" name="endDate" defaultValue={editProject?.endDate || ""} required />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Status</Form.Label>
+              <Form.Select name="status" defaultValue={editProject?.status || "Active"} required>
+                <option value="Active">Active</option>
+                <option value="Completed">Completed</option>
+                <option value="Pending">Pending</option>
+              </Form.Select>
+            </Form.Group>
+            <Button variant="primary" type="submit">
+              {editProject ? "Update Project" : "Add Project"}
+            </Button>
+          </Form>
+        </Modal.Body>
+      </Modal>
     </div>
   );
 };
