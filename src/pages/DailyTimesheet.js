@@ -3,7 +3,7 @@ import { Table, Button, Form, Card, Accordion } from "react-bootstrap";
 import { FaEdit, FaTrash, FaPlay, FaStop, FaChevronDown, FaChevronUp } from "react-icons/fa";
 import "../styles/DailyTimesheet.css"; // Custom styles
 
-const API_URL = "https://vercel.com/davidpushpams-projects/t-imesheet/27PD5kHxuVD5Q2N6fpKHGkMTCg4v";
+const API_URL = "t-imesheet-jy1rk1wym-davidpushpams-projects.vercel.app";
 
 const formatTime = (seconds) => {
   const hrs = Math.floor(seconds / 3600);
