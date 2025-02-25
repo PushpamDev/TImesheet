@@ -3,7 +3,7 @@ import { Table, Button, Form, Card, Accordion } from "react-bootstrap";
 import { FaEdit, FaTrash, FaPlay, FaStop, FaChevronDown, FaChevronUp } from "react-icons/fa";
 import "../styles/DailyTimesheet.css"; // Custom styles
 
-const API_URL = "t-imesheet-fe09z7ath-davidpushpams-projects.vercel.app";
+const API_URL = "https://t-imesheet-fe09z7ath-davidpushpams-projects.vercel.app";
 
 const formatTime = (seconds) => {
   const hrs = Math.floor(seconds / 3600);
@@ -50,13 +50,12 @@ const DailyTimesheet = () => {
     fetch(`${API_URL}/timesheet/daily`)
       .then((res) => {
         if (!res.ok) {
-          // Handle HTTP errors
           throw new Error(`HTTP error! Status: ${res.status}`);
         }
-        return res.json(); // Parse JSON if the response is okay
+        return res.json();
       })
       .then((data) => setEntries(data))
-      // .catch((err) => console.error("Error fetching timesheets:", err));
+      .catch((err) => console.error("Error fetching timesheets:", err));
   }, []);
 
   useEffect(() => {
@@ -78,7 +77,7 @@ const DailyTimesheet = () => {
         project,
         duration,
         time_started: startTime.toLocaleTimeString(),
-        date: new Date().toISOString().split("T")[0], // YYYY-MM-DD format
+        date: new Date().toISOString().split("T")[0],
       };
 
       if (editId !== null) {
@@ -94,17 +93,13 @@ const DailyTimesheet = () => {
           })
           .catch((err) => console.error("Error updating timesheet entry:", err));
       } else {
-        console.log("Sending POST request to add new entry:", newEntry);
         fetch(`${API_URL}/timesheet/daily`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(newEntry),
         })
           .then((res) => res.json())
-          .then((data) => {
-            console.log("New entry added:", data);
-            setEntries([...entries, data]);
-          })
+          .then((data) => setEntries([...entries, data]))
           .catch((err) => console.error("Error adding timesheet entry:", err));
       }
 
