@@ -56,7 +56,7 @@ const DailyTimesheet = () => {
         return res.json(); // Parse JSON if the response is okay
       })
       .then((data) => setEntries(data))
-      .catch((err) => console.error("Error fetching timesheets:", err));
+      // .catch((err) => console.error("Error fetching timesheets:", err));
   }, []);
 
   useEffect(() => {
