@@ -13,4 +13,9 @@
       }
     ]
   }
+  {
+    "routes": [
+      { "src": "/manifest.json", "dest": "/public/manifest.json" }
+    ]
+  }
   
