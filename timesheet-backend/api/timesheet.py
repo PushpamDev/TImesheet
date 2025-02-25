@@ -8,7 +8,7 @@ from flask_cors import CORS
 app = Flask(__name__)
 
 # Enable CORS for frontend URL
-CORS(app, origins=["https://t-imesheet-1kk9co0ew-davidpushpams-projects.vercel.app"])
+CORS(app, origins=["t-imesheet-ozt7gbsz4-davidpushpams-projects.vercel.app"])
 
 # SQLite Database Configuration
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///timesheet.db"
