@@ -1,35 +1,30 @@
 import React, { useState, useEffect } from "react";
-import { Table, Button, Form, Card, Accordion } from "react-bootstrap";
-import { FaEdit, FaTrash, FaPlay, FaStop, FaChevronDown, FaChevronUp } from "react-icons/fa";
-import "../styles/DailyTimesheet.css"; // Custom styles
+import { Button, Form, Card, Accordion } from "react-bootstrap";
+import { FaPlay, FaStop, FaChevronDown, FaChevronUp, FaPlus, FaSave, FaTimes } from "react-icons/fa";
+import "../styles/DailyTimesheet.css";
 
-const API_URL = "t-imesheet.vercel.app";
+const API_URL = "https://timesheet.vercel.app";
 
 const formatTime = (seconds) => {
   const hrs = Math.floor(seconds / 3600);
   const mins = Math.floor((seconds % 3600) / 60);
-  const secs = seconds % 60;
-  return `${hrs.toString().padStart(2, "0")}:${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+  return `${hrs.toString().padStart(2, "0")}:${mins.toString().padStart(2, "0")}`;
 };
 
 const getCurrentWeekDays = () => {
   const today = new Date();
   const currentDay = today.getDay();
-  const maxDays = currentDay === 0 ? 5 : currentDay === 6 ? 5 : currentDay;
   const startOfWeek = new Date(today);
   startOfWeek.setDate(today.getDate() - (currentDay === 0 ? 6 : currentDay - 1));
 
-  const days = [];
-  for (let i = 0; i < maxDays; i++) {
+  return [...Array(5)].map((_, i) => {
     const date = new Date(startOfWeek);
     date.setDate(startOfWeek.getDate() + i);
-    days.push({
+    return {
       date,
       label: date.toLocaleDateString("en-US", { weekday: "long", day: "2-digit", month: "short" }),
-    });
-  }
-
-  return days.reverse();
+    };
+  }).reverse();
 };
 
 const DailyTimesheet = () => {
@@ -39,73 +34,50 @@ const DailyTimesheet = () => {
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const [startTime, setStartTime] = useState(null);
   const [elapsedTime, setElapsedTime] = useState(0);
-  const [editId, setEditId] = useState(null);
-  const [filterProject, setFilterProject] = useState("");
   const [expandedDays, setExpandedDays] = useState({});
+  const [manualEntries, setManualEntries] = useState({});
+  const [showFormForDay, setShowFormForDay] = useState(null);
 
   const weekDays = getCurrentWeekDays();
 
-  // Fetch timesheet entries from API with error handling
   useEffect(() => {
     fetch(`${API_URL}/timesheet/daily`)
-      .then((res) => {
-        if (!res.ok) {
-          throw new Error(`HTTP error! Status: ${res.status}`);
-        }
-        return res.json();
-      })
-      .then((data) => setEntries(data))
+      .then((res) => res.json())
+      .then(setEntries)
       .catch((err) => console.error("Error fetching timesheets:", err));
   }, []);
 
   useEffect(() => {
-    let timer;
     if (isTimerRunning) {
-      timer = setInterval(() => {
-        setElapsedTime((prev) => prev + 1);
-      }, 1000);
+      const timer = setInterval(() => setElapsedTime((prev) => prev + 1), 1000);
+      return () => clearInterval(timer);
     }
-    return () => clearInterval(timer);
   }, [isTimerRunning]);
 
   const handleStartStopTimer = () => {
     if (isTimerRunning) {
-      const endTime = new Date();
-      const duration = Math.floor((endTime - startTime) / 1000);
+      const duration = Math.floor((new Date() - startTime) / 1000);
       const newEntry = {
         task,
         project,
-        duration,
         time_started: startTime.toLocaleTimeString(),
+        duration: formatTime(duration),
         date: new Date().toISOString().split("T")[0],
       };
 
-      if (editId !== null) {
-        fetch(`${API_URL}/timesheet/daily/${editId}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(newEntry),
-        })
-          .then((res) => res.json())
-          .then(() => {
-            setEntries(entries.map((entry) => (entry.id === editId ? { ...entry, ...newEntry } : entry)));
-            setEditId(null);
-          })
-          .catch((err) => console.error("Error updating timesheet entry:", err));
-      } else {
-        fetch(`${API_URL}/timesheet/daily`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(newEntry),
-        })
-          .then((res) => res.json())
-          .then((data) => setEntries([...entries, data]))
-          .catch((err) => console.error("Error adding timesheet entry:", err));
-      }
+      fetch(`${API_URL}/timesheet/daily`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newEntry),
+      })
+      .then((res) => res.json())
+      .then((data) => setEntries([...entries, data]))
+      .catch((err) => console.error("Error saving timesheet:", err));
 
       setIsTimerRunning(false);
       setTask("");
       setProject("");
+      setElapsedTime(0);
     } else {
       setStartTime(new Date());
       setElapsedTime(0);
@@ -113,22 +85,30 @@ const DailyTimesheet = () => {
     }
   };
 
-  const handleEdit = (id) => {
-    const entry = entries.find((e) => e.id === id);
-    setTask(entry.task);
-    setProject(entry.project);
-    setEditId(id);
-    setIsTimerRunning(false);
+  const handleAddEntryClick = (day) => {
+    setShowFormForDay(day.label);
+    setManualEntries((prev) => ({
+      ...prev,
+      [day.label]: { task: "", project: "", timeStarted: "", duration: "" },
+    }));
   };
 
-  const handleDelete = (id) => {
-    fetch(`${API_URL}/timesheet/daily/${id}`, { method: "DELETE" })
-      .then(() => setEntries(entries.filter((entry) => entry.id !== id)))
-      .catch((err) => console.error("Error deleting entry:", err));
-  };
+  const handleSaveManualEntry = (day) => {
+    const newManualEntry = {
+      ...manualEntries[day.label],
+      date: day.date.toISOString().split("T")[0],
+    };
 
-  const toggleDay = (day) => {
-    setExpandedDays((prev) => ({ ...prev, [day]: !prev[day] }));
+    fetch(`${API_URL}/timesheet/daily`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newManualEntry),
+    })
+    .then((res) => res.json())
+    .then((data) => setEntries([...entries, data]))
+    .catch((err) => console.error("Error saving entry:", err));
+
+    setShowFormForDay(null);
   };
 
   return (
@@ -149,7 +129,6 @@ const DailyTimesheet = () => {
               <option value="Project B">Project B</option>
             </Form.Control>
           </Form.Group>
-
           <div className="d-flex align-items-center mt-3">
             <Button onClick={handleStartStopTimer} variant={isTimerRunning ? "danger" : "success"} className="btn-lg shadow-sm">
               {isTimerRunning ? <FaStop /> : <FaPlay />} {isTimerRunning ? " Stop Timer" : " Start Timer"}
@@ -160,47 +139,40 @@ const DailyTimesheet = () => {
       </Card>
 
       <Accordion className="mt-4">
-        {weekDays.map((day, index) => {
-          const dayEntries = entries.filter((entry) => entry.date === day.date.toISOString().split("T")[0]);
-          return (
-            <Card key={index} className="mb-2">
-              <Card.Header>
-                <Button variant="link" className="text-dark fw-bold" onClick={() => toggleDay(day.label)}>
-                  {day.label} {expandedDays[day.label] ? <FaChevronUp /> : <FaChevronDown />}
+        {weekDays.map((day, index) => (
+          <Card key={index} className="mb-2">
+            <Card.Header>
+              <Button variant="link" className="text-dark fw-bold" onClick={() => setExpandedDays((prev) => ({ ...prev, [day.label]: !prev[day.label] }))}>
+                {day.label} {expandedDays[day.label] ? <FaChevronUp /> : <FaChevronDown />}
+              </Button>
+            </Card.Header>
+            {expandedDays[day.label] && (
+              <Card.Body>
+                <Button variant="primary" className="mb-2" onClick={() => handleAddEntryClick(day)}>
+                  <FaPlus /> Add Entry
                 </Button>
-              </Card.Header>
-              {expandedDays[day.label] && (
-                <Card.Body>
-                  <Table striped bordered hover>
-                    <thead className="table-dark">
-                      <tr>
-                        <th>Task</th>
-                        <th>Project</th>
-                        <th>Time Started</th>
-                        <th>Duration</th>
-                        <th>Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {dayEntries.map((entry) => (
-                        <tr key={entry.id}>
-                          <td>{entry.task}</td>
-                          <td>{entry.project}</td>
-                          <td>{entry.time_started}</td>
-                          <td>{formatTime(entry.duration)}</td>
-                          <td>
-                            <Button onClick={() => handleEdit(entry.id)}><FaEdit /></Button>
-                            <Button onClick={() => handleDelete(entry.id)}><FaTrash /></Button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </Table>
-                </Card.Body>
-              )}
-            </Card>
-          );
-        })}
+                {showFormForDay === day.label && (
+                  <Form>
+                    <Form.Group className="mt-2">
+                      <Form.Control type="text" placeholder="Task" onChange={(e) => setManualEntries(prev => ({ ...prev, [day.label]: { ...prev[day.label], task: e.target.value } }))} />
+                    </Form.Group>
+                    <Form.Group className="mt-2">
+                      <Form.Control type="text" placeholder="Project" onChange={(e) => setManualEntries(prev => ({ ...prev, [day.label]: { ...prev[day.label], project: e.target.value } }))} />
+                    </Form.Group>
+                    <Form.Group className="mt-2">
+                      <Form.Control type="time" placeholder="Time Started" onChange={(e) => setManualEntries(prev => ({ ...prev, [day.label]: { ...prev[day.label], timeStarted: e.target.value } }))} />
+                    </Form.Group>
+                    <Form.Group className="mt-2">
+                      <Form.Control type="text" placeholder="Duration (HH:MM)" onChange={(e) => setManualEntries(prev => ({ ...prev, [day.label]: { ...prev[day.label], duration: e.target.value } }))} />
+                    </Form.Group>
+                    <Button className="mt-2 me-2" onClick={() => handleSaveManualEntry(day)}><FaSave /> Save</Button>
+                    <Button className="mt-2" variant="secondary" onClick={() => setShowFormForDay(null)}><FaTimes /> Cancel</Button>
+                  </Form>
+                )}
+              </Card.Body>
+            )}
+          </Card>
+        ))}
       </Accordion>
     </div>
   );
