@@ -67,9 +67,37 @@
 /* ✅ Mobile Styles ✅ */
 /* =================== */
 
-/* ✅ Mobile Bottom Navigation - Fixed at Bottom */
 @media (max-width: 768px) {
-  #mobile-sidebar {
+  /* Sidebar on Mobile */
+  .sidebar-expanded {
+    width: 200px;
+  }
+
+  .sidebar-collapsed {
+    width: 60px;
+  }
+
+  .main-content {
+    margin-left: 200px;
+  }
+
+  .sidebar-collapsed + .main-content {
+    margin-left: 60px;
+  }
+
+  /* Increase icon size and spacing for mobile */
+  .nav-link svg {
+    font-size: 26px; /* Bigger icons on mobile */
+    margin-right: 15px; /* More spacing */
+  }
+
+  .nav-link {
+    padding: 14px 18px; /* Bigger touch area for mobile */
+  }
+
+  /* ✅ Mobile Bottom Navigation - Fixed at Bottom */
+@media (max-width: 768px) {
+     #mobile-sidebar {
     width: 100%;
     height: 60px;
     position: fixed; /* ✅ Keep navbar always visible */
@@ -104,3 +132,4 @@
     font-size: 26px; /* Bigger icons for easy tapping */
   }
 }
+
