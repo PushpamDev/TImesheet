@@ -22,12 +22,9 @@ function App() {
 
   return (
     <Router>
-      <div className="app-container">
-        {/* Sidebar should always be present */}
+      <div className="d-flex">
         {user && <Sidebar userRole={user.role} />} 
-
-        {/* Main content area */}
-        <div className="main-content">
+        <div className="container-fluid p-3">
           <Routes>
             {!user ? (
               <Route path="*" element={<Login setUser={setUser} />} />
