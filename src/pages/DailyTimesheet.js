@@ -1,21 +1,23 @@
-import React, { useState, useEffect } from "react";
-import { Button, Form, Card, Accordion } from "react-bootstrap";
+import React, { useState, useEffect, useCallback } from "react";
+import { Button, Form, Card, Accordion, Spinner } from "react-bootstrap";
 import { FaPlay, FaStop, FaChevronDown, FaChevronUp, FaPlus, FaSave, FaTimes } from "react-icons/fa";
 import "../styles/DailyTimesheet.css";
 
 const API_URL = "https://timesheet.vercel.app";
 
+// Format time to HH:MM:SS
 const formatTime = (seconds) => {
   const hrs = Math.floor(seconds / 3600);
   const mins = Math.floor((seconds % 3600) / 60);
-  return `${hrs.toString().padStart(2, "0")}:${mins.toString().padStart(2, "0")}`;
+  const secs = seconds % 60;
+  return `${hrs.toString().padStart(2, "0")}:${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
 };
 
+// Get the current week's weekdays
 const getCurrentWeekDays = () => {
   const today = new Date();
-  const currentDay = today.getDay();
   const startOfWeek = new Date(today);
-  startOfWeek.setDate(today.getDate() - (currentDay === 0 ? 6 : currentDay - 1));
+  startOfWeek.setDate(today.getDate() - (today.getDay() === 0 ? 6 : today.getDay() - 1));
 
   return [...Array(5)].map((_, i) => {
     const date = new Date(startOfWeek);
@@ -37,15 +39,22 @@ const DailyTimesheet = () => {
   const [expandedDays, setExpandedDays] = useState({});
   const [manualEntries, setManualEntries] = useState({});
   const [showFormForDay, setShowFormForDay] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const weekDays = getCurrentWeekDays();
 
-  useEffect(() => {
+  // Fetch timesheet data
+  const fetchEntries = useCallback(() => {
     fetch(`${API_URL}/timesheet/daily`)
       .then((res) => res.json())
-      .then(setEntries)
-      .catch((err) => console.error("Error fetching timesheets:", err));
+      .then((data) => setEntries(data))
+      .catch((err) => console.error("Error fetching timesheets:", err))
+      .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    fetchEntries();
+  }, [fetchEntries]);
 
   useEffect(() => {
     if (isTimerRunning) {
@@ -54,6 +63,7 @@ const DailyTimesheet = () => {
     }
   }, [isTimerRunning]);
 
+  // Handle start/stop timer
   const handleStartStopTimer = () => {
     if (isTimerRunning) {
       const duration = Math.floor((new Date() - startTime) / 1000);
@@ -70,9 +80,9 @@ const DailyTimesheet = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newEntry),
       })
-      .then((res) => res.json())
-      .then((data) => setEntries([...entries, data]))
-      .catch((err) => console.error("Error saving timesheet:", err));
+        .then((res) => res.json())
+        .then((data) => setEntries((prev) => [...prev, data]))
+        .catch((err) => console.error("Error saving timesheet:", err));
 
       setIsTimerRunning(false);
       setTask("");
@@ -85,6 +95,7 @@ const DailyTimesheet = () => {
     }
   };
 
+  // Handle form toggling
   const handleAddEntryClick = (day) => {
     setShowFormForDay(day.label);
     setManualEntries((prev) => ({
@@ -93,6 +104,7 @@ const DailyTimesheet = () => {
     }));
   };
 
+  // Save manual entry
   const handleSaveManualEntry = (day) => {
     const newManualEntry = {
       ...manualEntries[day.label],
@@ -104,9 +116,9 @@ const DailyTimesheet = () => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(newManualEntry),
     })
-    .then((res) => res.json())
-    .then((data) => setEntries([...entries, data]))
-    .catch((err) => console.error("Error saving entry:", err));
+      .then((res) => res.json())
+      .then((data) => setEntries((prev) => [...prev, data]))
+      .catch((err) => console.error("Error saving entry:", err));
 
     setShowFormForDay(null);
   };
@@ -115,6 +127,7 @@ const DailyTimesheet = () => {
     <div className="container mt-4">
       <h2 className="text-center">🕒 Daily Timesheet</h2>
 
+      {/* Timer Card */}
       <Card className="p-3 shadow-sm">
         <Form>
           <Form.Group className="mt-2">
@@ -138,41 +151,41 @@ const DailyTimesheet = () => {
         </Form>
       </Card>
 
+      {/* Timesheet Entries */}
       <Accordion className="mt-4">
-        {weekDays.map((day, index) => (
-          <Card key={index} className="mb-2">
-            <Card.Header>
-              <Button variant="link" className="text-dark fw-bold" onClick={() => setExpandedDays((prev) => ({ ...prev, [day.label]: !prev[day.label] }))}>
-                {day.label} {expandedDays[day.label] ? <FaChevronUp /> : <FaChevronDown />}
-              </Button>
-            </Card.Header>
-            {expandedDays[day.label] && (
-              <Card.Body>
-                <Button variant="primary" className="mb-2" onClick={() => handleAddEntryClick(day)}>
-                  <FaPlus /> Add Entry
+        {loading ? (
+          <div className="text-center my-3">
+            <Spinner animation="border" variant="primary" />
+          </div>
+        ) : (
+          weekDays.map((day, index) => (
+            <Card key={index} className="mb-2">
+              <Card.Header>
+                <Button variant="link" className="text-dark fw-bold" onClick={() => setExpandedDays((prev) => ({ ...prev, [day.label]: !prev[day.label] }))}>
+                  {day.label} {expandedDays[day.label] ? <FaChevronUp /> : <FaChevronDown />}
                 </Button>
-                {showFormForDay === day.label && (
-                  <Form>
-                    <Form.Group className="mt-2">
-                      <Form.Control type="text" placeholder="Task" onChange={(e) => setManualEntries(prev => ({ ...prev, [day.label]: { ...prev[day.label], task: e.target.value } }))} />
-                    </Form.Group>
-                    <Form.Group className="mt-2">
-                      <Form.Control type="text" placeholder="Project" onChange={(e) => setManualEntries(prev => ({ ...prev, [day.label]: { ...prev[day.label], project: e.target.value } }))} />
-                    </Form.Group>
-                    <Form.Group className="mt-2">
-                      <Form.Control type="time" placeholder="Time Started" onChange={(e) => setManualEntries(prev => ({ ...prev, [day.label]: { ...prev[day.label], timeStarted: e.target.value } }))} />
-                    </Form.Group>
-                    <Form.Group className="mt-2">
-                      <Form.Control type="text" placeholder="Duration (HH:MM)" onChange={(e) => setManualEntries(prev => ({ ...prev, [day.label]: { ...prev[day.label], duration: e.target.value } }))} />
-                    </Form.Group>
-                    <Button className="mt-2 me-2" onClick={() => handleSaveManualEntry(day)}><FaSave /> Save</Button>
-                    <Button className="mt-2" variant="secondary" onClick={() => setShowFormForDay(null)}><FaTimes /> Cancel</Button>
-                  </Form>
-                )}
-              </Card.Body>
-            )}
-          </Card>
-        ))}
+              </Card.Header>
+              {expandedDays[day.label] && (
+                <Card.Body>
+                  <Button variant="primary" className="mb-2" onClick={() => handleAddEntryClick(day)}>
+                    <FaPlus /> Add Entry
+                  </Button>
+                  {showFormForDay === day.label && (
+                    <Form>
+                      {["Task", "Project", "Time Started", "Duration (HH:MM)"].map((placeholder, idx) => (
+                        <Form.Group key={idx} className="mt-2">
+                          <Form.Control type="text" placeholder={placeholder} onChange={(e) => setManualEntries(prev => ({ ...prev, [day.label]: { ...prev[day.label], [placeholder.toLowerCase().replace(/\s/g, '')]: e.target.value } }))} />
+                        </Form.Group>
+                      ))}
+                      <Button className="mt-2 me-2" onClick={() => handleSaveManualEntry(day)}><FaSave /> Save</Button>
+                      <Button className="mt-2" variant="secondary" onClick={() => setShowFormForDay(null)}><FaTimes /> Cancel</Button>
+                    </Form>
+                  )}
+                </Card.Body>
+              )}
+            </Card>
+          ))
+        )}
       </Accordion>
     </div>
   );
