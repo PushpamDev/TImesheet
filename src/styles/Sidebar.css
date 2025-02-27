@@ -1,4 +1,6 @@
-/* Sidebar Container */
+/* ======================= */
+/* ✅ Sidebar Container ✅ */
+/* ======================= */
 #sidebar {
   height: 100vh; /* Full height */
   transition: width 0.3s ease-in-out;
@@ -24,7 +26,9 @@
   background-color: #222; /* Dark background */
 }
 
-/* Navigation Links */
+/* ============================== */
+/* ✅ Sidebar Navigation Links ✅ */
+/* ============================== */
 .nav-link {
   display: flex;
   align-items: center;
@@ -34,6 +38,7 @@
   font-size: 16px; /* Slightly larger text */
   color: white;
   text-decoration: none;
+  position: relative; /* Needed for active indicator */
 }
 
 /* Hide text when collapsed */
@@ -47,7 +52,25 @@
   margin-right: 12px; /* More spacing between icon and text */
 }
 
-/* Button to Toggle Sidebar */
+/* ======================= */
+/* ✅ Active Page Style ✅ */
+/* ======================= */
+.nav-link.active .sidebar-icon::after,
+.nav-item.active .sidebar-icon::after {
+  content: "";
+  position: absolute;
+  bottom: -5px; /* Adjust position */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 10px;
+  height: 10px;
+  background-color: white;
+  border-radius: 50%;
+}
+
+/* ========================== */
+/* ✅ Sidebar Toggle Button ✅ */
+/* ========================== */
 .btn {
   width: 100%;
   text-align: left;
@@ -118,11 +141,25 @@
     color: white;
     text-decoration: none;
     font-size: 14px;
+    position: relative;
   }
 
   /* Mobile Icons */
   .sidebar-icon {
     font-size: 26px; /* Bigger icons on mobile */
+  }
+
+  /* ✅ White Circle Indicator for Active Page (Mobile) */
+  .nav-item.active .sidebar-icon::after {
+    content: "";
+    position: absolute;
+    bottom: -4px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 10px;
+    height: 10px;
+    background-color: white;
+    border-radius: 50%;
   }
 
   /* Prevent content from being hidden by the navbar */
