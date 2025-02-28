@@ -1,21 +1,19 @@
 {
-    "version": 2,
-    "builds": [
-      {
-        "src": "api/timesheet.py",
-        "use": "@vercel/python"
+  "version": 2,
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "build"
       }
-    ],
-    "routes": [
-      {
-        "src": "/api/(.*)",
-        "dest": "/api/timesheet.py"
-      }
-    ]
-  }
-  {
-    "routes": [
-      { "src": "/manifest.json", "dest": "/public/manifest.json" }
-    ]
-  }
-  
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/index.html",
+      "status": 200
+    }
+  ]
+}
