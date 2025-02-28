@@ -3,7 +3,7 @@ import { Button, Form, Card, Table, Spinner, Modal } from "react-bootstrap";
 import { FaPlay, FaStop, FaTrash, FaEdit } from "react-icons/fa";
 import "../styles/DailyTimesheet.css";
 
-const API_URL = "http://127.0.0.1:5000/api";
+const API_URL = "https://my-flask-app-w5c9.onrender.com";
 
 // Format time to HH:MM:SS
 const formatTime = (seconds) => {
