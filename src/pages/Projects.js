@@ -16,7 +16,7 @@ const Projects = () => {
 
   const fetchProjects = async () => {
     try {
-      const response = await axios.get("https://my-flask-app-w5c9.onrender.com/projects");
+      const response = await axios.get("https://timesheet-backend-k4ny.onrender.com/projects");
       setProjects(response.data);
     } catch (error) {
       console.error("Error fetching projects:", error);
@@ -46,9 +46,9 @@ const Projects = () => {
 
     try {
       if (editProject) {
-        await axios.put(`https://my-flask-app-w5c9.onrender.com/projects/${editProject.id}`, newProject);
+        await axios.put(`https://timesheet-backend-k4ny.onrender.com/projects/${editProject.id}`, newProject);
       } else {
-        await axios.post("https://my-flask-app-w5c9.onrender.com/projects", newProject);
+        await axios.post("https://timesheet-backend-k4ny.onrender.com/projects", newProject);
       }
       setShowModal(false);
       fetchProjects();
@@ -59,7 +59,7 @@ const Projects = () => {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`https://my-flask-app-w5c9.onrender.com/projects/${id}`);
+      await axios.delete(`https://timesheet-backend-k4ny.onrender.com/projects/${id}`);
       fetchProjects();
     } catch (error) {
       console.error("Error deleting project:", error);
