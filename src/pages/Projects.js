@@ -59,7 +59,7 @@ const Projects = () => {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`https://my-flask-app-w5c9.onrender.comprojects/${id}`);
+      await axios.delete(`https://my-flask-app-w5c9.onrender.com/projects/${id}`);
       fetchProjects();
     } catch (error) {
       console.error("Error deleting project:", error);
