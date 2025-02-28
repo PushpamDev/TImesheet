@@ -1,19 +1,8 @@
 {
-  "version": 2,
-  "builds": [
-    {
-      "src": "package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "build"
-      }
-    }
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "https://my-flask-app-w5c9.onrender.com" }
   ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "/index.html",
-      "status": 200
-    }
+  "redirects": [
+    { "source": "/(.*)", "destination": "/", "statusCode": 200 }
   ]
 }
