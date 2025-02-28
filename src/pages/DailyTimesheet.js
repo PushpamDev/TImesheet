@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Button, Form, Card, Accordion, Spinner } from "react-bootstrap";
-import { FaPlay, FaStop, FaChevronDown, FaChevronUp, FaPlus, FaSave, FaTimes } from "react-icons/fa";
+import { Button, Form, Card, Table, Spinner, Modal } from "react-bootstrap";
+import { FaPlay, FaStop, FaTrash, FaEdit } from "react-icons/fa";
 import "../styles/DailyTimesheet.css";
 
-const API_URL = "https://timesheet.vercel.app";
+const API_URL = "http://127.0.0.1:5000/api";
 
 // Format time to HH:MM:SS
 const formatTime = (seconds) => {
@@ -13,43 +13,43 @@ const formatTime = (seconds) => {
   return `${hrs.toString().padStart(2, "0")}:${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
 };
 
-// Get the current week's weekdays
-const getCurrentWeekDays = () => {
-  const today = new Date();
-  const startOfWeek = new Date(today);
-  startOfWeek.setDate(today.getDate() - (today.getDay() === 0 ? 6 : today.getDay() - 1));
-
-  return [...Array(5)].map((_, i) => {
-    const date = new Date(startOfWeek);
-    date.setDate(startOfWeek.getDate() + i);
-    return {
-      date,
-      label: date.toLocaleDateString("en-US", { weekday: "long", day: "2-digit", month: "short" }),
-    };
-  }).reverse();
-};
-
 const DailyTimesheet = () => {
   const [entries, setEntries] = useState([]);
   const [task, setTask] = useState("");
   const [project, setProject] = useState("");
+  const [projects, setProjects] = useState([]);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const [startTime, setStartTime] = useState(null);
   const [elapsedTime, setElapsedTime] = useState(0);
-  const [expandedDays, setExpandedDays] = useState({});
-  const [manualEntries, setManualEntries] = useState({});
-  const [showFormForDay, setShowFormForDay] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const weekDays = getCurrentWeekDays();
+  // Edit Modal State
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editEntry, setEditEntry] = useState(null);
 
-  // Fetch timesheet data
+  // Fetch timesheet entries for the logged-in employee
   const fetchEntries = useCallback(() => {
-    fetch(`${API_URL}/timesheet/daily`)
+    const storedUser = JSON.parse(localStorage.getItem("user"));
+    if (!storedUser || !storedUser.employee_id) {
+      console.error("No user or employee ID found in localStorage");
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    fetch(`${API_URL}/timesheet/daily?employee_id=${storedUser.employee_id}`)
       .then((res) => res.json())
       .then((data) => setEntries(data))
       .catch((err) => console.error("Error fetching timesheets:", err))
       .finally(() => setLoading(false));
+  }, []);
+
+  // Fetch project list
+  useEffect(() => {
+    fetch(`${API_URL}/projects`)
+      .then((res) => res.json())
+      .then((data) => setProjects(data))
+      .catch((err) => console.error("Error fetching projects:", err));
   }, []);
 
   useEffect(() => {
@@ -63,16 +63,22 @@ const DailyTimesheet = () => {
     }
   }, [isTimerRunning]);
 
-  // Handle start/stop timer
   const handleStartStopTimer = () => {
+    if (!task || !project) {
+      alert("Please enter task and project before starting the timer.");
+      return;
+    }
     if (isTimerRunning) {
       const duration = Math.floor((new Date() - startTime) / 1000);
+      const storedUser = JSON.parse(localStorage.getItem("user"));
+
       const newEntry = {
         task,
         project,
         time_started: startTime.toLocaleTimeString(),
-        duration: formatTime(duration),
+        duration,
         date: new Date().toISOString().split("T")[0],
+        employee_id: storedUser.employee_id, // Assign employee ID
       };
 
       fetch(`${API_URL}/timesheet/daily`, {
@@ -95,39 +101,46 @@ const DailyTimesheet = () => {
     }
   };
 
-  // Handle form toggling
-  const handleAddEntryClick = (day) => {
-    setShowFormForDay(day.label);
-    setManualEntries((prev) => ({
-      ...prev,
-      [day.label]: { task: "", project: "", timeStarted: "", duration: "" },
-    }));
+  const handleDeleteEntry = (id) => {
+    fetch(`${API_URL}/timesheet/daily/${id}`, {
+      method: "DELETE",
+    })
+      .then(() => setEntries((prev) => prev.filter((entry) => entry.id !== id)))
+      .catch((err) => console.error("Error deleting entry:", err));
   };
 
-  // Save manual entry
-  const handleSaveManualEntry = (day) => {
-    const newManualEntry = {
-      ...manualEntries[day.label],
-      date: day.date.toISOString().split("T")[0],
-    };
+  // Open Edit Modal
+  const handleEditClick = (entry) => {
+    setEditEntry(entry);
+    setShowEditModal(true);
+  };
 
-    fetch(`${API_URL}/timesheet/daily`, {
-      method: "POST",
+  // Handle Edit Form Submission
+  const handleEditSubmit = () => {
+    if (!editEntry.task || !editEntry.project) {
+      alert("Task and Project cannot be empty!");
+      return;
+    }
+
+    fetch(`${API_URL}/timesheet/daily/${editEntry.id}`, {
+      method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(newManualEntry),
+      body: JSON.stringify(editEntry),
     })
       .then((res) => res.json())
-      .then((data) => setEntries((prev) => [...prev, data]))
-      .catch((err) => console.error("Error saving entry:", err));
-
-    setShowFormForDay(null);
+      .then(() => {
+        setEntries((prev) =>
+          prev.map((entry) => (entry.id === editEntry.id ? editEntry : entry))
+        );
+        setShowEditModal(false);
+      })
+      .catch((err) => console.error("Error updating entry:", err));
   };
 
   return (
     <div className="container mt-4">
       <h2 className="text-center">🕒 Daily Timesheet</h2>
 
-      {/* Timer Card */}
       <Card className="p-3 shadow-sm">
         <Form>
           <Form.Group className="mt-2">
@@ -138,8 +151,9 @@ const DailyTimesheet = () => {
             <Form.Label>Project</Form.Label>
             <Form.Control as="select" value={project} onChange={(e) => setProject(e.target.value)}>
               <option value="">Select Project</option>
-              <option value="Project A">Project A</option>
-              <option value="Project B">Project B</option>
+              {projects.map((proj) => (
+                <option key={proj.id} value={proj.name}>{proj.name}</option>
+              ))}
             </Form.Control>
           </Form.Group>
           <div className="d-flex align-items-center mt-3">
@@ -151,42 +165,49 @@ const DailyTimesheet = () => {
         </Form>
       </Card>
 
-      {/* Timesheet Entries */}
-      <Accordion className="mt-4">
-        {loading ? (
-          <div className="text-center my-3">
-            <Spinner animation="border" variant="primary" />
-          </div>
-        ) : (
-          weekDays.map((day, index) => (
-            <Card key={index} className="mb-2">
-              <Card.Header>
-                <Button variant="link" className="text-dark fw-bold" onClick={() => setExpandedDays((prev) => ({ ...prev, [day.label]: !prev[day.label] }))}>
-                  {day.label} {expandedDays[day.label] ? <FaChevronUp /> : <FaChevronDown />}
-                </Button>
-              </Card.Header>
-              {expandedDays[day.label] && (
-                <Card.Body>
-                  <Button variant="primary" className="mb-2" onClick={() => handleAddEntryClick(day)}>
-                    <FaPlus /> Add Entry
-                  </Button>
-                  {showFormForDay === day.label && (
-                    <Form>
-                      {["Task", "Project", "Time Started", "Duration (HH:MM)"].map((placeholder, idx) => (
-                        <Form.Group key={idx} className="mt-2">
-                          <Form.Control type="text" placeholder={placeholder} onChange={(e) => setManualEntries(prev => ({ ...prev, [day.label]: { ...prev[day.label], [placeholder.toLowerCase().replace(/\s/g, '')]: e.target.value } }))} />
-                        </Form.Group>
-                      ))}
-                      <Button className="mt-2 me-2" onClick={() => handleSaveManualEntry(day)}><FaSave /> Save</Button>
-                      <Button className="mt-2" variant="secondary" onClick={() => setShowFormForDay(null)}><FaTimes /> Cancel</Button>
-                    </Form>
-                  )}
-                </Card.Body>
-              )}
-            </Card>
-          ))
-        )}
-      </Accordion>
+      {loading ? (
+        <Spinner animation="border" className="d-block mx-auto mt-4" />
+      ) : (
+        <Table striped bordered hover responsive className="mt-4">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Task</th>
+              <th>Project</th>
+              <th>Time Started</th>
+              <th>Duration</th>
+              <th>Date</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {entries.length > 0 ? (
+              entries.map((entry, index) => (
+                <tr key={entry.id}>
+                  <td>{index + 1}</td>
+                  <td>{entry.task}</td>
+                  <td>{entry.project}</td>
+                  <td>{entry.time_started}</td>
+                  <td>{formatTime(entry.duration)}</td>
+                  <td>{entry.date}</td>
+                  <td>
+                    <Button variant="warning" size="sm" onClick={() => handleEditClick(entry)} className="me-2">
+                      <FaEdit />
+                    </Button>
+                    <Button variant="danger" size="sm" onClick={() => handleDeleteEntry(entry.id)}>
+                      <FaTrash />
+                    </Button>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="7" className="text-center">No entries found.</td>
+              </tr>
+            )}
+          </tbody>
+        </Table>
+      )}
     </div>
   );
 };

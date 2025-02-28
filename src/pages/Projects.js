@@ -1,23 +1,27 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Table, Button, Form, Modal, Card, Row, Col } from "react-bootstrap";
 import { FaEdit, FaTrash, FaPlus, FaCheckCircle, FaClock, FaTasks } from "react-icons/fa";
+import axios from "axios";
 import "../styles/Projects.css";
 
 const Projects = () => {
-  const [projects, setProjects] = useState([
-    { id: 1, name: "Project Alpha", description: "First project", startDate: "2024-01-01", endDate: "2024-06-30", status: "Active" },
-    { id: 2, name: "Project Beta", description: "Second project", startDate: "2024-02-15", endDate: "2024-09-30", status: "Completed" },
-    { id: 3, name: "Project Gamma", description: "Third project", startDate: "2024-03-10", endDate: "2024-12-15", status: "Pending" }
-  ]);
-
+  const [projects, setProjects] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [editProject, setEditProject] = useState(null);
   const [filterStatus, setFilterStatus] = useState("");
 
-  const totalProjects = projects.length;
-  const activeProjects = projects.filter(p => p.status === "Active").length;
-  const completedProjects = projects.filter(p => p.status === "Completed").length;
-  const pendingProjects = projects.filter(p => p.status === "Pending").length;
+  useEffect(() => {
+    fetchProjects();
+  }, []);
+
+  const fetchProjects = async () => {
+    try {
+      const response = await axios.get("http://localhost:5000/api/projects");
+      setProjects(response.data);
+    } catch (error) {
+      console.error("Error fetching projects:", error);
+    }
+  };
 
   const handleAddProject = () => {
     setEditProject(null);
@@ -29,11 +33,10 @@ const Projects = () => {
     setShowModal(true);
   };
 
-  const handleSaveProject = (e) => {
+  const handleSaveProject = async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
     const newProject = {
-      id: editProject ? editProject.id : projects.length + 1,
       name: formData.get("name"),
       description: formData.get("description"),
       startDate: formData.get("startDate"),
@@ -41,12 +44,26 @@ const Projects = () => {
       status: formData.get("status"),
     };
 
-    setProjects(editProject ? projects.map(p => (p.id === editProject.id ? newProject : p)) : [...projects, newProject]);
-    setShowModal(false);
+    try {
+      if (editProject) {
+        await axios.put(`http://localhost:5000/api/projects/${editProject.id}`, newProject);
+      } else {
+        await axios.post("http://localhost:5000/api/projects", newProject);
+      }
+      setShowModal(false);
+      fetchProjects();
+    } catch (error) {
+      console.error("Error saving project:", error);
+    }
   };
 
-  const handleDelete = (id) => {
-    setProjects(projects.filter(p => p.id !== id));
+  const handleDelete = async (id) => {
+    try {
+      await axios.delete(`http://localhost:5000/api/projects/${id}`);
+      fetchProjects();
+    } catch (error) {
+      console.error("Error deleting project:", error);
+    }
   };
 
   const filteredProjects = filterStatus ? projects.filter(p => p.status === filterStatus) : projects;
@@ -64,7 +81,7 @@ const Projects = () => {
                 <FaTasks size={20} className="text-white" />
               </div>
               <h6>Total Projects</h6>
-              <h4 className="fw-bold">{totalProjects}</h4>
+              <h4 className="fw-bold">{projects.length}</h4>
             </Card.Body>
           </Card>
         </Col>
@@ -75,7 +92,7 @@ const Projects = () => {
                 <FaCheckCircle size={20} className="text-white" />
               </div>
               <h6>Active Projects</h6>
-              <h4 className="fw-bold">{activeProjects}</h4>
+              <h4 className="fw-bold">{projects.filter(p => p.status === "Active").length}</h4>
             </Card.Body>
           </Card>
         </Col>
@@ -86,7 +103,7 @@ const Projects = () => {
                 <FaCheckCircle size={20} className="text-white" />
               </div>
               <h6>Completed Projects</h6>
-              <h4 className="fw-bold">{completedProjects}</h4>
+              <h4 className="fw-bold">{projects.filter(p => p.status === "Completed").length}</h4>
             </Card.Body>
           </Card>
         </Col>
@@ -97,7 +114,7 @@ const Projects = () => {
                 <FaClock size={20} className="text-white" />
               </div>
               <h6>Pending Projects</h6>
-              <h4 className="fw-bold">{pendingProjects}</h4>
+              <h4 className="fw-bold">{projects.filter(p => p.status === "Pending").length}</h4>
             </Card.Body>
           </Card>
         </Col>
@@ -157,42 +174,62 @@ const Projects = () => {
       </div>
 
       {/* Add/Edit Project Modal */}
-      <Modal show={showModal} onHide={() => setShowModal(false)}>
-        <Modal.Header closeButton>
-          <Modal.Title>{editProject ? "Edit Project" : "Add Project"}</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Form onSubmit={handleSaveProject}>
-            <Form.Group className="mb-3">
-              <Form.Label>Project Name</Form.Label>
-              <Form.Control type="text" name="name" defaultValue={editProject?.name || ""} required />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Description</Form.Label>
-              <Form.Control as="textarea" name="description" defaultValue={editProject?.description || ""} required />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Start Date</Form.Label>
-              <Form.Control type="date" name="startDate" defaultValue={editProject?.startDate || ""} required />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>End Date</Form.Label>
-              <Form.Control type="date" name="endDate" defaultValue={editProject?.endDate || ""} required />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Status</Form.Label>
-              <Form.Select name="status" defaultValue={editProject?.status || "Active"} required>
-                <option value="Active">Active</option>
-                <option value="Completed">Completed</option>
-                <option value="Pending">Pending</option>
-              </Form.Select>
-            </Form.Group>
-            <Button variant="primary" type="submit">
-              {editProject ? "Update Project" : "Add Project"}
-            </Button>
-          </Form>
-        </Modal.Body>
-      </Modal>
+<Modal show={showModal} onHide={() => setShowModal(false)}>
+  <Modal.Header closeButton>
+    <Modal.Title>{editProject ? "Edit Project" : "Add Project"}</Modal.Title>
+  </Modal.Header>
+  <Modal.Body>
+    <Form onSubmit={handleSaveProject}>
+      {/* Project ID (Read-only) */}
+      {editProject && (
+        <Form.Group className="mb-3">
+          <Form.Label>Project ID</Form.Label>
+          <Form.Control type="text" name="id" defaultValue={editProject.id} readOnly />
+        </Form.Group>
+      )}
+
+      {/* Project Name */}
+      <Form.Group className="mb-3">
+        <Form.Label>Project Name</Form.Label>
+        <Form.Control type="text" name="name" defaultValue={editProject?.name || ""} required />
+      </Form.Group>
+
+      {/* Description */}
+      <Form.Group className="mb-3">
+        <Form.Label>Description</Form.Label>
+        <Form.Control as="textarea" name="description" defaultValue={editProject?.description || ""} required />
+      </Form.Group>
+
+      {/* Start Date */}
+      <Form.Group className="mb-3">
+        <Form.Label>Start Date</Form.Label>
+        <Form.Control type="date" name="startDate" defaultValue={editProject?.startDate || ""} required />
+      </Form.Group>
+
+      {/* End Date */}
+      <Form.Group className="mb-3">
+        <Form.Label>Expected End Date</Form.Label>
+        <Form.Control type="date" name="endDate" defaultValue={editProject?.endDate || ""} required />
+      </Form.Group>
+
+      {/* Status */}
+      <Form.Group className="mb-3">
+        <Form.Label>Status</Form.Label>
+        <Form.Select name="status" defaultValue={editProject?.status || ""} required>
+          <option value="Active">Active</option>
+          <option value="Completed">Completed</option>
+          <option value="Pending">Pending</option>
+        </Form.Select>
+      </Form.Group>
+
+      {/* Submit Button */}
+      <Button variant="primary" type="submit">
+        {editProject ? "Update Project" : "Add Project"}
+      </Button>
+    </Form>
+  </Modal.Body>
+</Modal>
+
     </div>
   );
 };

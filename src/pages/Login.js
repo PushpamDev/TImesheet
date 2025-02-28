@@ -9,10 +9,11 @@ const Login = ({ setUser }) => {
 
   // Dummy users for testing
   const users = [
-    { email: "admin@example.com", password: "admin123", role: "Admin" },
-    { email: "manager@example.com", password: "manager123", role: "Manager" },
-    { email: "employee@example.com", password: "employee123", role: "Employee" },
+    { email: "admin@example.com", password: "admin123", role: "Admin", employee_id: 1 },
+    { email: "manager@example.com", password: "manager123", role: "Manager", employee_id: 2 },
+    { email: "employee@example.com", password: "employee123", role: "Employee", employee_id: 3 },
   ];
+  
 
   const handleLogin = (e) => {
     e.preventDefault();
@@ -21,8 +22,8 @@ const Login = ({ setUser }) => {
 
     if (foundUser) {
       setUser(foundUser);
-      localStorage.setItem("user", JSON.stringify(foundUser)); // Store user in localStorage
-      navigate("/"); // Redirect to Dashboard
+      localStorage.setItem("user", JSON.stringify(foundUser)); // Now includes employee_id
+      navigate("/");
     } else {
       setError("Invalid credentials. Please try again.");
     }
